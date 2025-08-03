@@ -1,4 +1,4 @@
-﻿namespace Gnobbi.DebugTools.Decorator;
+﻿namespace Gnobbi.DebugTools.Decorator.Abstractions;
 
 [Flags]
 public enum DecoratingType

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace Gnobbi.DebugTools.Decorator.Abstractions
+namespace Gnobbi.DebugTools.Decorator
 {
     public static class ServiceCollectionExtensions
     {

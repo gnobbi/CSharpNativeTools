@@ -1,6 +1,4 @@
-﻿using Gnobbi.DebugTools.Decorator.Abstractions;
-
-namespace Gnobbi.DebugTools.Decorator.Decorator.Test.DomainTestClasses;
+﻿namespace Gnobbi.DebugTools.Decorator.Decorator.Test.DomainTestClasses;
 
 public class FakeDiagnosticEntryHandler : IDiagnosticEntryHandler
 {

@@ -22,16 +22,16 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="NUnit" Version="4.2.2" />
     <PackageReference Include="NUnit.Analyzers" Version="4.4.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+	  <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
   </ItemGroup>
 
   <ItemGroup>
-	<ProjectReference Include="..\CSharpNativeTools.SourceCodeGeneratorLib\Decorator.Abstractions.csproj" />
-	<ProjectReference Include="..\SourceCodeGenerator\Decorator.SourceCodeGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Gnobbi.DebugTools.Decorator.Abstractions\Decorator.Abstractions.csproj" />
+    <ProjectReference Include="..\Gnobbi.DebugTools.Decorator.SourceCodeGenerator\Decorator.SourceCodeGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="NUnit.Framework" />
+	  <Using Include="NUnit.Framework" />
   </ItemGroup>
 
 </Project>

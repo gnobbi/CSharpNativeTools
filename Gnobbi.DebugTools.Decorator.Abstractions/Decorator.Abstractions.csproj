@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AssemblyName>Gnobbi.DebugTools.Decorator</AssemblyName>
-    <RootNamespace>Gnobbi.DebugTools.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+    <RootNamespace>Gnobbi.DebugTools.Decorator</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

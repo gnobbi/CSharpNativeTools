@@ -2,6 +2,7 @@
 
 namespace Gnobbi.DebugTools.Decorator.Decorator.Test.DomainTestClasses
 {
+    [Decorate(DecoratingType.Diagnostics)]
     public interface IProjectRepository
     {
         Project TestMethodWithValueTuple(User user, (string s, int i) test0, out string test);

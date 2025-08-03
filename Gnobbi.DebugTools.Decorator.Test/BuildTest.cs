@@ -1,5 +1,4 @@
-﻿using Gnobbi.DebugTools.Decorator.Abstractions;
-using Gnobbi.DebugTools.Decorator.Decorator.Test.DomainTestClasses;
+﻿using Gnobbi.DebugTools.Decorator.Decorator.Test.DomainTestClasses;
 using Gnobbi.DebugTools.Decorator.Decorator.Test.DomainTestClasses.Model;
 using Microsoft.Extensions.DependencyInjection;
 

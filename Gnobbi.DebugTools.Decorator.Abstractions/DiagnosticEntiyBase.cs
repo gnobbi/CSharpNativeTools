@@ -1,4 +1,4 @@
-﻿namespace Gnobbi.DebugTools.Decorator.Abstractions;
+﻿namespace Gnobbi.DebugTools.Decorator;
 public class DiagnosticEntiyBase
 {
     public int ProcessId { get; set; }

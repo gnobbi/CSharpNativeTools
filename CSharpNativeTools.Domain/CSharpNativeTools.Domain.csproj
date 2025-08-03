@@ -16,8 +16,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CSharpNativeTools.ResultPattern\CSharpNativeTools.ResultPattern.csproj" />
-    <ProjectReference Include="..\CSharpNativeTools.SourceCodeGeneratorLib\CSharpNativeTools.SourceCodeGeneratorLib.csproj" />
+    <ProjectReference Include="..\CSharpNativeTools.SourceCodeGeneratorLib\Abstractions.csproj" />
     <ProjectReference Include="..\SourceCodeGenerator\SourceCodeGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
+
+	<ItemGroup>
+		<AdditionalFiles Include="Gnobbi.DebugTools.Decorator.Config.json" />
+	</ItemGroup>
 
 </Project>

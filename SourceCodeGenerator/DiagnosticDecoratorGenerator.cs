@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace GeneratedDI
+namespace Gnobbi.DebugTools.Decorator.SourceCodeGenerator
 {
     [Generator]
     public class DiagnosticDecoratorSourceGenerator : ISourceGenerator
@@ -22,27 +22,31 @@ namespace GeneratedDI
             if (!(context.SyntaxReceiver is InterfaceReceiver receiver))
                 return;
 
+            receiver.SetContext(context);
+
             var compilation = context.Compilation;
             foreach (var ifaceDecl in receiver.CandidateInterfaces)
             {
                 var model = compilation.GetSemanticModel(ifaceDecl.SyntaxTree);
                 if (!(model.GetDeclaredSymbol(ifaceDecl) is INamedTypeSymbol ifaceSymbol))
+                {
                     continue;
+                }
 
-                // Check DecorateAttribute
-                var decorateAttr = ifaceSymbol.GetAttributes()
-                    .FirstOrDefault(a => a.AttributeClass?.Name == "DecorateAttribute");
-
-                if (decorateAttr == null)
+                if (!receiver.IsAcceped(ifaceSymbol))
+                {
                     continue;
+                }
 
-                var flags = (int)decorateAttr.ConstructorArguments[0].Value;
-                if ((flags & 1) == 0) // 1 = Diagnostics is set
-                    continue;
-
-                var code = GenerateDecoratorForInterface(ifaceSymbol);
-                context.AddSource($"{ifaceSymbol.Name}_DiagnosticDecorator.g.cs", SourceText.From(code, Encoding.UTF8));
+                GenerateCode(context, ifaceSymbol);
             }
+        }
+
+        private void GenerateCode(GeneratorExecutionContext context, INamedTypeSymbol ifaceSymbol)
+        {
+            var code = GenerateDecoratorForInterface(ifaceSymbol);
+            var className = ifaceSymbol.Name.TrimStart('I') + "_DiagnosticDecorator";
+            context.AddSource($"{className}_DiagnosticDecorator.g.cs", SourceText.From(code, Encoding.UTF8));
         }
 
         private string GenerateDecoratorForInterface(INamedTypeSymbol ifaceSymbol)
@@ -72,7 +76,7 @@ namespace GeneratedDI
                 sb.AppendLine($"using {ns};");
 
             sb.AppendLine();
-            sb.AppendLine("namespace GeneratedDI");
+            sb.AppendLine("namespace Gnobbi.DebugTools.Decorator");
             sb.AppendLine("{");
             sb.AppendLine($"    public class {className} : {ifaceSymbol.Name}");
             sb.AppendLine("    {");
@@ -163,36 +167,63 @@ namespace GeneratedDI
 
             // Methode
             sb.AppendLine();
-            sb.AppendLine($"        public {returnType} {methodName}({paramterWithTypes})");
+            sb.AppendLine($"        public {(isAsync ? "async ": " ")}{returnType} {methodName}({paramterWithTypes})");
             sb.AppendLine("        {");
             sb.AppendLine($"            var _GeneratedDI_startedAt = DateTime.UtcNow;");
-            sb.AppendLine($"            var result = _inner.{methodName}({paramNamesForCalling});");
-            sb.AppendLine($"            var diagnosticEntity = new {entityName}");
-            sb.AppendLine("            {");
-            foreach (var p in method.Parameters)
-                sb.AppendLine($"                Input_{p.Name} = {p.Name},");
-            sb.AppendLine($"                ThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId.ToString(),");
-            sb.AppendLine($"                MethodName = \"{returnType} {methodName}({paramterWithTypes})\",");
-            sb.AppendLine($"                ClassName = \"{interfaceName}\",");
-            sb.AppendLine($"                StartedAt = _GeneratedDI_startedAt");
-            sb.AppendLine("            };");
-
-            // Aufruf inner
-            sb.AppendLine();
-            if (isAsync)
+            if (returnType == "void" || returnType == "Task")
             {
-                sb.AppendLine("            var awaited = result.GetAwaiter().GetResult();");
-                sb.AppendLine($"            diagnosticEntity.Result = awaited;");
+                sb.AppendLine($"            {(isAsync ? "await " : " ")}_inner.{methodName}({paramNamesForCalling});");
             }
             else
             {
-                sb.AppendLine($"            diagnosticEntity.Result = result;");
+                sb.AppendLine($"            var result = {(isAsync ? "await " : " ")}_inner.{methodName}({paramNamesForCalling});");
+
+            }
+            sb.AppendLine($"            var diagnosticEntity = new {entityName}");
+            sb.AppendLine("            {");
+            foreach (var p in method.Parameters)
+            {
+                sb.AppendLine($"                Input_{p.Name} = {p.Name},");
+            }
+            sb.AppendLine($"                ProcessId = Environment.ProcessId,");
+            sb.AppendLine($"                ThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId,");
+            sb.AppendLine($"                MethodName = \"{returnType} {methodName}({paramterWithTypes})\",");
+            sb.AppendLine($"                ClassName = \"{interfaceName}\",");
+            sb.AppendLine($"                StartedAt = _GeneratedDI_startedAt,");
+            if (returnType == "Task" || returnType == "void")
+            {
+
+            }
+            else
+            {
+                sb.AppendLine($"                Result = result,");
             }
 
-            sb.AppendLine("            diagnosticEntity.FinshedAt = DateTime.UtcNow;");
+            sb.AppendLine("                FinshedAt = DateTime.UtcNow");
+            sb.AppendLine("            };");
+            sb.AppendLine();
+
             sb.AppendLine("            diagnosticEntity.ElapsedMilliseconds = (int)(diagnosticEntity.FinshedAt - diagnosticEntity.StartedAt).TotalMilliseconds;");
-            sb.AppendLine("            _handler.HandleDiagnosticEntryAsync(diagnosticEntity).GetAwaiter().GetResult();");
-            sb.AppendLine("            return result;");
+            // Aufruf inner
+            sb.AppendLine();
+
+            if (isAsync)
+            {
+                sb.AppendLine("            await _handler.HandleDiagnosticEntryAsync(diagnosticEntity);");
+            }
+            else
+            {
+                sb.AppendLine("            _handler.HandleDiagnosticEntryAsync(diagnosticEntity).GetAwaiter().GetResult();");
+            }
+
+            if (returnType == "Task" || returnType == "void")
+            {
+                sb.AppendLine("            return;");
+            }
+            else
+            {
+                sb.AppendLine("            return result;");
+            }
             sb.AppendLine("        }");
 
             // Diagnostic Entity Klasse
@@ -201,7 +232,12 @@ namespace GeneratedDI
             sb.AppendLine("        {");
             foreach (var p in method.Parameters)
                 sb.AppendLine($"            public {p.Type} Input_{p.Name} {{ get; set; }}");
-            if (isAsync && method.ReturnType is INamedTypeSymbol ts2 && ts2.TypeArguments.Length == 1)
+
+            if (returnType == "Task" || returnType == "void")
+            {
+
+            }
+            else if (isAsync && method.ReturnType is INamedTypeSymbol ts2 && ts2.TypeArguments.Length == 1)
             {
                 sb.AppendLine($"            public {ts2.TypeArguments[0]} Result {{ get; set; }}");
             }
@@ -210,16 +246,6 @@ namespace GeneratedDI
                 sb.AppendLine($"            public {method.ReturnType} Result {{ get; set; }}");
             }
             sb.AppendLine("        }");
-        }
-
-        private class InterfaceReceiver : ISyntaxReceiver
-        {
-            public List<InterfaceDeclarationSyntax> CandidateInterfaces { get; } = new List<InterfaceDeclarationSyntax>();
-            public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
-            {
-                if (syntaxNode is InterfaceDeclarationSyntax ids && ids.AttributeLists.Count > 0)
-                    CandidateInterfaces.Add(ids);
-            }
         }
     }
 

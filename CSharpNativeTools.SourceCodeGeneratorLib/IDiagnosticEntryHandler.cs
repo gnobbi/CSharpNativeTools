@@ -1,8 +1,6 @@
-﻿
-namespace GeneratedDI
+﻿namespace Gnobbi.DebugTools.Decorator;
+
+public interface IDiagnosticEntryHandler
 {
-    public interface IDiagnosticEntryHandler
-    {
-        Task HandleDiagnosticEntryAsync(DiagnosticEntiyBase entity);
-    }
+    Task HandleDiagnosticEntryAsync(DiagnosticEntiyBase entity);
 }

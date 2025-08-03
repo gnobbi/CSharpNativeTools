@@ -1,9 +1,7 @@
 ﻿using CSharpNativeTools.Domain;
-using CSharpNativeTools.ResultPattern;
-using GeneratedDI;
+using CSharpNativeTools.Domain2;
+using Gnobbi.DebugTools.Decorator;
 using Microsoft.Extensions.DependencyInjection;
-using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
 
 namespace SharpNativeTools.App;
 
@@ -38,6 +36,8 @@ public class App
          var projectResult = projectRepo.GetProjectByUser(user.Value, ("DSFA", 2), out var str);
         var stri = $"ref {str}";
          var v = projectRepo.TestMethod(new Tripple<User, string, bool> { Item1 = user.Value, Item2 = "halo", Item3 = false}, userRepo);
+        await projectRepo.VoidFunction();
+        projectRepo.VoidFunction2();
     }
 
     public static ServiceCollection RegisterServices(ServiceCollection serviceCollection)

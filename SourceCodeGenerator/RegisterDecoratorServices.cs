@@ -1,11 +1,10 @@
-﻿using System.Linq;
-using System.Text;
-using System.Collections.Generic;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
-namespace GeneratedDI
+namespace Gnobbi.DebugTools.Decorator.SourceCodeGenerator
 {
     [Generator]
     public class DecoratorSourceGenerator : ISourceGenerator
@@ -20,6 +19,7 @@ namespace GeneratedDI
             if (!(context.SyntaxReceiver is InterfaceReceiver receiver))
                 return;
 
+            receiver.SetContext(context);
             var compilation = context.Compilation;
             var namespaces = new HashSet<string>();
             var registrations = new StringBuilder();
@@ -30,11 +30,10 @@ namespace GeneratedDI
                 if (!(model.GetDeclaredSymbol(ifaceDecl) is INamedTypeSymbol ifaceSymbol))
                     continue;
 
-                var attr = ifaceSymbol.GetAttributes().FirstOrDefault(a =>
-                    a.AttributeClass?.Name == "DecorateAttribute" ||
-                    a.AttributeClass?.ToDisplayString().EndsWith(".DecorateAttribute") == true);
-
-                if (attr == null) continue;
+                if (!receiver.IsAcceped(ifaceSymbol))
+                {
+                    continue;
+                }
 
                 var ifaceNs = ifaceSymbol.ContainingNamespace?.ToDisplayString();
                 if (!string.IsNullOrWhiteSpace(ifaceNs))
@@ -43,19 +42,7 @@ namespace GeneratedDI
                 var ifaceName = ifaceSymbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
                 var baseName = ifaceName.StartsWith("I") ? ifaceName.Substring(1) : ifaceName;
 
-                var implNs = ifaceNs;
-                if (!string.IsNullOrWhiteSpace(implNs))
-                    namespaces.Add(implNs);
-
-                if (attr.ConstructorArguments.Length == 1)
-                {
-                    var value = (int)attr.ConstructorArguments[0].Value;
-                    if ((value & 1) != 0) // 1 = Diagnostics is set
-                    {
-                        registrations.AppendLine($"            services.Decorate<{ifaceName}>((inner, s) => {{ var handler = s.GetRequiredService<IDiagnosticEntryHandler>(); return new {baseName}_DiagnosticDecorator(inner, handler);}});");
-                        namespaces.Add(implNs);
-                    }
-                }
+                registrations.AppendLine($"            services.Decorate<{ifaceName}>((inner, s) => {{ var handler = s.GetRequiredService<IDiagnosticEntryHandler>(); return new {baseName}_DiagnosticDecorator(inner, handler);}});");
             }
 
             var sb = new StringBuilder();
@@ -67,7 +54,7 @@ namespace GeneratedDI
             sb.AppendLine("using System;");
             sb.AppendLine("using Microsoft.Extensions.DependencyInjection;");
             sb.AppendLine();
-            sb.AppendLine("namespace GeneratedDI");
+            sb.AppendLine("namespace Gnobbi.DebugTools.Decorator");
             sb.AppendLine("{");
             sb.AppendLine("    public static class ServiceDecoratorRegistration");
             sb.AppendLine("    {");
@@ -80,21 +67,6 @@ namespace GeneratedDI
             sb.AppendLine("}");
 
             context.AddSource("ServiceDecoratorRegistration.g.cs", SourceText.From(sb.ToString(), Encoding.UTF8));
-        }
-
-
-        private class InterfaceReceiver : ISyntaxReceiver
-        {
-            public List<InterfaceDeclarationSyntax> CandidateInterfaces { get; } = new List<InterfaceDeclarationSyntax>();
-
-            public void OnVisitSyntaxNode(SyntaxNode syntaxNode)
-            {
-                if (syntaxNode is InterfaceDeclarationSyntax iface &&
-                    iface.AttributeLists.Count > 0)
-                {
-                    CandidateInterfaces.Add(iface);
-                }
-            }
         }
     }
 }

@@ -5,6 +5,8 @@
 		<OutputItemType>Analyzer</OutputItemType>
 		<Pack>true</Pack>
 		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+		<AssemblyName>Gnobbi.DebugTools.$(MSBuildProjectName)</AssemblyName>
+		<RootNamespace>Gnobbi.DebugTools.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>

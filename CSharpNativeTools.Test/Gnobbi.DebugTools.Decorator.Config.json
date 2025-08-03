@@ -1,0 +1,4 @@
+{
+  "Type": "Namespaces",
+  "IncludeNamespaces": [ "Gnobbi.DebugTools.Decorator.Decorator.Test.DomainTestClasses" ]
+}

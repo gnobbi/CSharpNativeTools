@@ -7,10 +7,18 @@
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
 	  <WarningsAsErrors>nullable</WarningsAsErrors>
+	  <AssemblyName>Gnobbi.DebugTools.Decorator.$(MSBuildProjectName)</AssemblyName>
+	  <RootNamespace>Gnobbi.DebugTools.Decorator.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
 	  </PropertyGroup>
 
   <ItemGroup>
+    <AdditionalFiles Include="Gnobbi.DebugTools.Decorator.Config.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.7" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.7" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="NUnit" Version="4.2.2" />
     <PackageReference Include="NUnit.Analyzers" Version="4.4.0" />
@@ -18,7 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CSharpNativeTools.Domain\CSharpNativeTools.Domain.csproj" />
+	<ProjectReference Include="..\CSharpNativeTools.SourceCodeGeneratorLib\Decorator.Abstractions.csproj" />
+	<ProjectReference Include="..\SourceCodeGenerator\Decorator.SourceCodeGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace GeneratedDI
+namespace Gnobbi.DebugTools.Decorator
 {
     public static class ServiceCollectionExtensions
     {

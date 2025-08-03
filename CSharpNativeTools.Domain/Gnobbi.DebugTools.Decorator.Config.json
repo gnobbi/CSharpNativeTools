@@ -1,0 +1,4 @@
+{
+  "Type": "Namespaces",
+  "IncludeNamespaces": ["CSharpNativeTools.Domain"]
+}

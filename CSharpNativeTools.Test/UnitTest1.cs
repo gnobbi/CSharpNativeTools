@@ -14,7 +14,7 @@ namespace CSharpNativeTools.Test
         [Test]
         public async Task Test1()
         {
-            var repo = new UserRepositoryLoggingDecorator(new UserRepository());
+            var repo = new  UserRepository();
             var repo2 = new ProjectRepository();
             var result = "input"
                 .Bind(repo.GetUserByName)
